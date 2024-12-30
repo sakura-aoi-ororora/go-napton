@@ -1,0 +1,9 @@
+/.devcontainer
+/.vscode
+
+# for debug
+/sand
+
+# kari
+/doc
+/napton
