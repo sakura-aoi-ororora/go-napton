@@ -3,14 +3,14 @@ package napton
 // TODO: 定数値のBuiltinができるようにする
 type GlobalHandleStack struct {
 	previous CtxStackNode
-	idents map[string]BuiltinFunc
+	idents   map[string]BuiltinFunc
 }
 
 func (gh *GlobalHandleStack) SetPrevious(previous CtxStackNode) {
 	gh.previous = previous
 }
 
-func (gh *GlobalHandleStack) GetPrevious() CtxStackNode  {
+func (gh *GlobalHandleStack) GetPrevious() CtxStackNode {
 	return gh.previous
 }
 
@@ -18,20 +18,20 @@ func (gh *GlobalHandleStack) GetValue() LispValue {
 	return nil
 }
 
-type IdentHandleStack struct {
+type IHandleStack struct {
 	previous CtxStackNode
 	handler  ASTNode
 }
 
-func (ih *IdentHandleStack) SetPrevious(previous CtxStackNode) {
+func (ih *IHandleStack) SetPrevious(previous CtxStackNode) {
 	ih.previous = previous
 }
 
-func (ih *IdentHandleStack) GetPrevious() CtxStackNode {
+func (ih *IHandleStack) GetPrevious() CtxStackNode {
 	return ih.previous
 }
 
-func (ih *IdentHandleStack) GetValue() LispValue {
+func (ih *IHandleStack) GetValue() LispValue {
 	return nil
 }
 
@@ -54,7 +54,7 @@ func (is *IdentStack) GetValue() LispValue {
 
 type LambdaStack struct {
 	previous CtxStackNode
-	args ListValue
+	args     ListValue
 }
 
 func (l *LambdaStack) SetPrevious(previous CtxStackNode) {
@@ -71,7 +71,7 @@ func (l *LambdaStack) GetValue() LispValue {
 
 type MacroStack struct {
 	previous CtxStackNode
-	args ListValue
+	args     ListValue
 }
 
 func (m *MacroStack) SetPrevious(previous CtxStackNode) {

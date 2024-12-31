@@ -5,12 +5,12 @@ package napton
 import "fmt"
 
 func checkIdent(r rune) bool {
-	return r != ' ' && 
-		r != '\t' && 
-		r != '\n' && 
-		r != '\r' && 
-		r != '(' && 
-		r != ')' && 
+	return r != ' ' &&
+		r != '\t' &&
+		r != '\n' &&
+		r != '\r' &&
+		r != '(' &&
+		r != ')' &&
 		r != '"' &&
 		r != ':'
 }
@@ -89,7 +89,7 @@ func (p *parser) parseNum() (ASTNum, error) {
 		}
 
 		if r >= '0' && r <= '9' {
-			value.Value = value.Value * 10 + float64(r-'0')
+			value.Value = value.Value*10 + float64(r-'0')
 			err := p.move()
 			if err != nil {
 				return ASTNum{}, err
@@ -203,7 +203,7 @@ func (p *parser) parseString() (ASTString, error) {
 func (p *parser) parseAtom() (ASTAtom, error) {
 	value := ASTAtom{}
 
-	r, err := p.peek();
+	r, err := p.peek()
 	if err != nil {
 		return ASTAtom{}, err
 	} else if r != ':' {
@@ -298,7 +298,7 @@ func (p *parser) parseAll() (ASTNode, error) {
 	if err := p.parseSpace(); err != nil {
 		return nil, err
 	}
-	
+
 	r, err := p.peek()
 	if err != nil {
 		return nil, err

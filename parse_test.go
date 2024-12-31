@@ -601,14 +601,3 @@ func Test_parser_parseList(t *testing.T) {
 		})
 	}
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -2,7 +2,7 @@ package napton
 
 type BuiltinFunc interface {
 	Name() string
-	OnEval(args []ASTNode, top CtxStackNode) LispValue
+	OnEval(args []ASTNode, top CtxStackNode) (LispValue, error)
 }
 
 type LispValue interface {
@@ -10,7 +10,7 @@ type LispValue interface {
 }
 
 type EvalableValue interface {
-	Eval(args []ASTNode, top CtxStackNode) LispValue
+	Eval(args []ASTNode, top CtxStackNode) (LispValue, error)
 }
 
 type CtxStackNode interface {

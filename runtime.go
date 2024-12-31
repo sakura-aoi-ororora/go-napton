@@ -1,46 +1,49 @@
 package napton
 
-import "fmt"
+// -- make Runtime state --
+type RuntimeBuilder struct {
+	baseStack CtxStackNode
+	builtins  []BuiltinFunc
+}
 
-func EvalWithStack(ast ASTNode, top CtxStackNode) LispValue {
-	switch ast := ast.(type) {
-	case ASTNum:
-		return NumValue(ast.Value)
-	case ASTString:
-		return StringValue(ast.Value)
-	case ASTAtom:
-		return AtomValue{
-			atom: ast.Value,
-			isDouble: false,
-		}
-	case ASTIdent:
-		cstack := top
-		for {
-			if gh, ok := cstack.(*GlobalHandleStack); ok {
-				return BuiltinValue{
-					builtin: gh.idents[ast.Value],
-				}
-			}
-
-			if ih, ok := cstack.(*IdentHandleStack); ok {
-				stack := &IdentStack{previous: cstack, ident: AtomValue{atom: ast.Value, isDouble: false}}
-				return EvalWithStack(ih.handler, stack)
-			}
-
-			if cstack.GetPrevious() == nil {
-				panic(fmt.Sprintf("'%s' is not found", ast.Value))
-			}
-
-			cstack = cstack.GetPrevious()
-		}
-	case ASTList:
-		head := EvalWithStack(ast.Value[0], top)
-		if evaled, ok := head.(EvalableValue); ok {
-			return evaled.Eval(ast.Value[1:len(ast.Value)], top)
-		} else {
-			panic(fmt.Sprintf("'%s' can't eval", head))
-		}
-	default:
-		panic("eval not implmented")
+func NewRuntimeBuilder() *RuntimeBuilder {
+	return &RuntimeBuilder{
+		baseStack: nil,
+		builtins:  make([]BuiltinFunc, 0),
 	}
+}
+
+func (rb *RuntimeBuilder) BaseStack(stack CtxStackNode) *RuntimeBuilder {
+	rb.baseStack = stack
+	return rb
+}
+
+func (rb *RuntimeBuilder) Builtin(builtin BuiltinFunc) *RuntimeBuilder {
+	rb.builtins = append(rb.builtins, builtin)
+	return rb
+}
+
+func (rb *RuntimeBuilder) Make() *Runtime {
+	builtinMap := make(map[string]BuiltinFunc)
+	for _, v := range rb.builtins {
+		builtinMap[v.Name()] = v
+	}
+
+	gh := &GlobalHandleStack{previous: rb.baseStack, idents: builtinMap}
+	return &Runtime{
+		runtimeStack: gh,
+	}
+}
+
+type Runtime struct {
+	runtimeStack CtxStackNode
+}
+
+func (r *Runtime) Run(code string) (LispValue, error) {
+	node, err := Parse(code)
+	if err != nil {
+		return nil, err
+	}
+
+	return EvalWithStack(node, r.runtimeStack)
 }

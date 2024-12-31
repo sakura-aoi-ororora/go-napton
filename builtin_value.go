@@ -15,7 +15,7 @@ func (s StringValue) Print() {
 }
 
 type AtomValue struct {
-	atom string
+	atom     string
 	isDouble bool
 }
 
@@ -41,18 +41,22 @@ func (l ListValue) Print() {
 }
 
 type LambdaValue struct {
-	ctx CtxStackNode
+	ctx  CtxStackNode
 	expr ASTNode
 }
 
-func (lam LambdaValue) Print()  {
+func (lam LambdaValue) Print() {
 	fmt.Print("<Lambda Value>")
 }
 
-func (lam LambdaValue) Eval(args []ASTNode, top CtxStackNode) LispValue {
+func (lam LambdaValue) Eval(args []ASTNode, top CtxStackNode) (LispValue, error) {
 	var eargs ListValue
 	for _, v := range args {
-		eargs = append(eargs, EvalWithStack(v, top))
+		arg, err := EvalWithStack(v, top)
+		if err != nil {
+			return ListValue(nil), err
+		}
+		eargs = append(eargs, arg)
 	}
 
 	stack := &LambdaStack{previous: lam.ctx, args: eargs}
@@ -60,7 +64,7 @@ func (lam LambdaValue) Eval(args []ASTNode, top CtxStackNode) LispValue {
 }
 
 type MacroValue struct {
-	ctx CtxStackNode
+	ctx  CtxStackNode
 	expr ASTNode
 }
 
@@ -68,14 +72,18 @@ func (mac MacroValue) Print() {
 	fmt.Print("<Macro Value>")
 }
 
-func (mac MacroValue) Eval(args []ASTNode, top CtxStackNode) LispValue {
+func (mac MacroValue) Eval(args []ASTNode, top CtxStackNode) (LispValue, error) {
 	var largs ListValue
-	for _,arg := range args {
+	for _, arg := range args {
 		largs = append(largs, intoListFromAST(arg))
 	}
 
 	stack := &MacroStack{previous: mac.ctx, args: largs}
-	result := EvalWithStack(mac.expr, stack)
+	result, err := EvalWithStack(mac.expr, stack)
+	if err != nil {
+		return ListValue(nil), err
+	}
+
 	return EvalWithStack(intoASTFromList(result), top)
 }
 
@@ -83,21 +91,21 @@ func intoListFromAST(ast ASTNode) LispValue {
 	switch ast := ast.(type) {
 	case ASTAtom:
 		return AtomValue{
-			atom: ast.Value,
+			atom:     ast.Value,
 			isDouble: true,
 		}
 	case ASTString:
 		return StringValue(ast.Value)
 	case ASTIdent:
 		return AtomValue{
-			atom: ast.Value,
+			atom:     ast.Value,
 			isDouble: false,
 		}
 	case ASTNum:
 		return NumValue(ast.Value)
 	case ASTList:
 		var list ListValue
-		for _,v := range ast.Value {
+		for _, v := range ast.Value {
 			list = append(list, intoListFromAST(v))
 		}
 		return list
@@ -130,6 +138,7 @@ func intoASTFromList(value LispValue) ASTNode {
 		panic(fmt.Sprintf("'%v' can't convert to AST", value))
 	}
 }
+
 type BuiltinValue struct {
 	builtin BuiltinFunc
 }
@@ -138,6 +147,6 @@ func (b BuiltinValue) Print() {
 	fmt.Printf("<Builtin (%s)>", b.builtin.Name())
 }
 
-func (b BuiltinValue) Eval(args []ASTNode, top CtxStackNode) LispValue {
+func (b BuiltinValue) Eval(args []ASTNode, top CtxStackNode) (LispValue, error) {
 	return b.builtin.OnEval(args, top)
 }
