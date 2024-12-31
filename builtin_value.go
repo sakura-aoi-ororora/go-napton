@@ -130,3 +130,14 @@ func intoASTFromList(value LispValue) ASTNode {
 		panic(fmt.Sprintf("'%v' can't convert to AST", value))
 	}
 }
+type BuiltinValue struct {
+	builtin BuiltinFunc
+}
+
+func (b BuiltinValue) Print() {
+	fmt.Printf("<Builtin (%s)>", b.builtin.Name())
+}
+
+func (b BuiltinValue) Eval(args []ASTNode, top CtxStackNode) LispValue {
+	return b.builtin.OnEval(args, top)
+}

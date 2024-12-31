@@ -16,13 +16,19 @@ func EvalWithStack(ast ASTNode, top CtxStackNode) LispValue {
 	case ASTIdent:
 		cstack := top
 		for {
-			if cstack.GetPrevious() == nil {
-				panic(fmt.Sprintf("'%s' is not found", ast.Value))
+			if gh, ok := cstack.(*GlobalHandleStack); ok {
+				return BuiltinValue{
+					builtin: gh.idents[ast.Value],
+				}
 			}
 
 			if ih, ok := cstack.(*IdentHandleStack); ok {
 				stack := &IdentStack{previous: cstack, ident: AtomValue{atom: ast.Value, isDouble: false}}
 				return EvalWithStack(ih.handler, stack)
+			}
+
+			if cstack.GetPrevious() == nil {
+				panic(fmt.Sprintf("'%s' is not found", ast.Value))
 			}
 
 			cstack = cstack.GetPrevious()

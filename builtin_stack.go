@@ -1,5 +1,23 @@
 package napton
 
+// TODO: 定数値のBuiltinができるようにする
+type GlobalHandleStack struct {
+	previous CtxStackNode
+	idents map[string]BuiltinFunc
+}
+
+func (gh *GlobalHandleStack) SetPrevious(previous CtxStackNode) {
+	gh.previous = previous
+}
+
+func (gh *GlobalHandleStack) GetPrevious() CtxStackNode  {
+	return gh.previous
+}
+
+func (gh *GlobalHandleStack) GetValue() LispValue {
+	return nil
+}
+
 type IdentHandleStack struct {
 	previous CtxStackNode
 	handler  ASTNode
